@@ -1,0 +1,43 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:eams_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  flyway:
+    enabled: false
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+eams:
+  resilience:
+    rate-limiting:
+      enabled: false
+  scheduler:
+    export-cleanup-cron: "0 0 1 1 * ?"
+    maintenance-cron: "0 0 1 1 * ?"
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  access-token-expiration-ms: 900000
+  refresh-token-expiration-ms: 604800000
+  cookie-name: eams_refresh_token
+
+logging:
+  level:
+    root: INFO
+    com.company.eams: DEBUG

@@ -1,0 +1,169 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+  tomcat:
+    threads:
+      max: 200 # Concurrent request-handling threads
+      min-spare: 20
+    accept-count: 100 # Queued requests beyond max threads (graceful backpressure)
+    max-connections: 8192
+
+spring:
+  application:
+    name: eams-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  # Database Configuration
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/eams}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:aadarsh2006}
+    driver-class-name: org.postgresql.Driver
+    # HikariCP Enterprise Pool Tuning
+    hikari:
+      pool-name: EAMSHikariCP
+      maximum-pool-size: 30 # Matches DB max_connections budget
+      minimum-idle: 10
+      connection-timeout: 5000 # 5s fail-fast instead of hanging indefinitely
+      idle-timeout: 300000 # 5 minutes
+      max-lifetime: 1800000 # 30 minutes
+      leak-detection-threshold: 15000 # Warns if a connection is leaked (>15s)
+      validation-timeout: 3000 # 3s validation timeout
+      keepalive-time: 60000 # 1 minute keepalive to prevent firewall disconnects
+
+  # JPA / Hibernate Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate # Flyway is responsible for schema migrations
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 25
+          order_inserts: true
+          order_updates: true
+        # Default query lock timeout (3 seconds) to avoid thread exhaustion
+        javax:
+          persistence:
+            lock:
+              timeout: 3000
+
+  # Flyway Migration Configuration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    validate-on-migrate: false
+    locations: classpath:db/migration
+
+  # Redis Configuration & Lettuce Connection Pool Tuning
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 32
+          max-idle: 16
+          min-idle: 4
+          max-wait: 2000ms
+          time-between-eviction-runs: 60000ms
+
+# Resilience4j Circuit Breakers & Rate Limiters
+resilience4j:
+  circuitbreaker:
+    instances:
+      exportService:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 75
+        slow-call-duration-threshold: 5000ms
+        wait-duration-in-open-state: 15000ms
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+      databaseService:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000ms
+        permitted-number-of-calls-in-half-open-state: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+  ratelimiter:
+    instances:
+      authEndpoint:
+        limit-for-period: 10
+        limit-refresh-period: 1m
+        timeout-duration: 0s
+      exportEndpoint:
+        limit-for-period: 5
+        limit-refresh-period: 1m
+        timeout-duration: 0s
+      defaultApi:
+        limit-for-period: 120
+        limit-refresh-period: 1m
+        timeout-duration: 0s
+
+# EAMS Resilience Layer Settings
+eams:
+  resilience:
+    rate-limiting:
+      enabled: true
+      auth-limit-per-minute: 10
+      export-limit-per-minute: 5
+      general-limit-per-minute: 120
+  scheduler:
+    export-cleanup-cron: "0 0 * * * *" # Hourly
+    maintenance-cron: "0 0 2 * * *" # Daily at 2 AM
+
+# JWT Security Settings
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  access-token-expiration-ms: 900000 # 15 minutes
+  refresh-token-expiration-ms: 604800000 # 7 days
+  cookie-name: eams_refresh_token
+
+# Spring Boot Actuator & Observability
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus, info, circuitbreakers, circuitbreakerevents, ratelimiters
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# OpenAPI / Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+logging:
+  level:
+    root: INFO
+    com.company.eams: DEBUG
+    org.hibernate.SQL: INFO
+    org.springframework.security: INFO

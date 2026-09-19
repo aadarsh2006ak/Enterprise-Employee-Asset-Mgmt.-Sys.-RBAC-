@@ -1,0 +1,2015 @@
+{
+	"info": {
+		"_postman_id": "eams-enterprise-full-suite-v2",
+		"name": "EAMS - Complete Enterprise Test Suite (Auth, RBAC, Dept, Employee, Asset Concurrency)",
+		"description": "Comprehensive automated test suite for Enterprise Employee & Asset Management System (EAMS) covering Authentication, JJWT Security, RBAC Enforcement, Department Module, Employee Module, and Asset Management with Pessimistic Locking & Concurrency Conflict Protection.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication Flows",
+			"item": [
+				{
+					"name": "1.1 Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Tokens and User details are present\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data.accessToken).to.be.a('string');",
+									"    pm.expect(jsonData.data.refreshToken).to.be.a('string');",
+									"    pm.expect(jsonData.data.user.role).to.eql('ADMIN');",
+									"    ",
+									"    pm.collectionVariables.set(\"adminAccessToken\", jsonData.data.accessToken);",
+									"    pm.collectionVariables.set(\"adminRefreshToken\", jsonData.data.refreshToken);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"usernameOrEmail\": \"{{adminUsername}}\",\n    \"password\": \"{{adminPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "1.2 Manager Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Manager profile role is MANAGER\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user.role).to.eql('MANAGER');",
+									"    pm.collectionVariables.set(\"managerAccessToken\", jsonData.data.accessToken);",
+									"    pm.collectionVariables.set(\"managerRefreshToken\", jsonData.data.refreshToken);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"usernameOrEmail\": \"{{managerUsername}}\",\n    \"password\": \"{{managerPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "1.3 Employee Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Employee profile role is EMPLOYEE\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user.role).to.eql('EMPLOYEE');",
+									"    pm.collectionVariables.set(\"employeeAccessToken\", jsonData.data.accessToken);",
+									"    pm.collectionVariables.set(\"employeeRefreshToken\", jsonData.data.refreshToken);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"usernameOrEmail\": \"{{employeeUsername}}\",\n    \"password\": \"{{employeePassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. User Profile (/me)",
+			"item": [
+				{
+					"name": "2.1 Get Admin Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Role is ADMIN\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.role).to.eql('ADMIN');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"me"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Department Module CRUD",
+			"item": [
+				{
+					"name": "3.1 Create Department (Admin - 201 Created)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Department created\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"createdDepartmentId\", jsonData.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"DevOps & Cloud Security\",\n    \"managerId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/departments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"departments"
+							]
+						}
+					}
+				},
+				{
+					"name": "3.2 Get Paginated Departments (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/departments?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"departments"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Employee Module CRUD",
+			"item": [
+				{
+					"name": "4.1 Create Employee (Admin - 201 Created)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Employee profile saved\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"createdEmployeeId\", jsonData.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"alex.vance\",\n    \"email\": \"alex.vance@company.com\",\n    \"password\": \"Alex@12345\",\n    \"role\": \"EMPLOYEE\",\n    \"employeeCode\": \"EMP-99001\",\n    \"fullName\": \"Alex Vance\",\n    \"departmentId\": {{createdDepartmentId}},\n    \"designation\": \"Senior Cloud Engineer\",\n    \"dateOfJoining\": \"2026-03-01\",\n    \"reportingToId\": 1,\n    \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/employees",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"employees"
+							]
+						}
+					}
+				},
+				{
+					"name": "4.2 Get Paginated Employees (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/employees?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"employees"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Asset Management & Concurrency Control",
+			"item": [
+				{
+					"name": "5.1 Create Asset Category (Admin - 201 Created)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Category created\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data.id).to.be.a('number');",
+									"    pm.collectionVariables.set(\"createdCategoryId\", jsonData.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Workstation & High Performance Computing\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"categories"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.2 List Asset Categories (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Categories list returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array').that.is.not.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"categories"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.3 Register New Asset (Admin - 201 Created)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Asset registered with AVAILABLE status\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.status).to.eql(\"AVAILABLE\");",
+									"    pm.expect(jsonData.data.assetTag).to.eql(\"AST-MBP-2026-901\");",
+									"    pm.collectionVariables.set(\"createdAssetId\", jsonData.data.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"assetTag\": \"AST-MBP-2026-901\",\n    \"categoryId\": {{createdCategoryId}},\n    \"modelName\": \"Apple MacBook Pro 16 M3 Max 64GB\",\n    \"serialNumber\": \"C02G9988HHKK\",\n    \"purchaseDate\": \"2026-03-01\",\n    \"status\": \"AVAILABLE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.4 Duplicate Asset Tag Rejection (Admin - 400 Bad Request)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"assetTag\": \"AST-MBP-2026-901\",\n    \"categoryId\": {{createdCategoryId}},\n    \"modelName\": \"Duplicate Tag Test\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.5 Get Paginated Assets (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Asset list is valid\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.content).to.be.an('array');",
+									"    pm.expect(jsonData.data.totalElements).to.be.at.least(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets?page=0&size=10&status=AVAILABLE",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "AVAILABLE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "5.6 Update Asset Metadata - Optimistic Version (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Model name updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.modelName).to.eql(\"Apple MacBook Pro 16 M3 Max 64GB - Customized\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"categoryId\": {{createdCategoryId}},\n    \"modelName\": \"Apple MacBook Pro 16 M3 Max 64GB - Customized\",\n    \"serialNumber\": \"C02G9988HHKK\",\n    \"purchaseDate\": \"2026-03-01\",\n    \"status\": \"AVAILABLE\",\n    \"version\": 0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets/{{createdAssetId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{createdAssetId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.7 Assign Asset to Employee - Pessimistic Lock (Manager - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Asset assigned successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data.isActive).to.eql(true);",
+									"    pm.expect(jsonData.data.employeeId).to.eql(pm.collectionVariables.get(\"createdEmployeeId\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{managerAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": {{createdEmployeeId}},\n    \"conditionNotes\": \"Handed over brand new workstation laptop\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets/{{createdAssetId}}/assign",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{createdAssetId}}",
+								"assign"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.8 Double Assignment Conflict Rejection (409 Conflict)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409 Conflict or 400 Bad Request on double assignment\", function () {",
+									"    pm.expect([409, 400]).to.include(pm.response.code);",
+									"});",
+									"",
+									"pm.test(\"Error explains asset is already assigned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": 1,\n    \"conditionNotes\": \"Concurrent conflicting assignment attempt\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets/{{createdAssetId}}/assign",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{createdAssetId}}",
+								"assign"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.9 Unauthorized Employee Assignment Attempt (403 Forbidden)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403 Forbidden\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{employeeAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employeeId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets/{{createdAssetId}}/assign",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{createdAssetId}}",
+								"assign"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.10 Asset Assignment History (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"History array contains active assignment\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array').that.is.not.empty;",
+									"    pm.expect(jsonData.data[0].isActive).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets/{{createdAssetId}}/history",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{createdAssetId}}",
+								"history"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.11 Return Asset - Pessimistic Lock (Manager - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Asset returned and active is false\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.isActive).to.eql(false);",
+									"    pm.expect(jsonData.data.returnedAt).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{managerAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"conditionNotes\": \"Returned in flawless condition with original charger and box\",\n    \"newStatus\": \"AVAILABLE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets/{{createdAssetId}}/return",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{createdAssetId}}",
+								"return"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.12 Return Unassigned Asset Rejection (409 Conflict)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409 Conflict or 400 Bad Request\", function () {",
+									"    pm.expect([409, 400]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"conditionNotes\": \"Second return attempt\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets/{{createdAssetId}}/return",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{createdAssetId}}",
+								"return"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.13 Delete Returned Asset (Admin - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminAccessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/assets/{{createdAssetId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{createdAssetId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Audit Logging & Historical Trails",
+			"item": [
+				{
+					"name": "6.1 Get Paginated Audit Logs (Admin - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Audit logs retrieved with pagination envelope\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data.content).to.be.an('array');",
+									"    pm.expect(jsonData.data.pageNumber).to.eql(0);",
+									"    ",
+									"    if (jsonData.data.content.length > 0) {",
+									"        pm.collectionVariables.set(\"lastAuditLogId\", jsonData.data.content[0].id.toString());",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/audit-logs?page=0&size=20&sortBy=createdAt&sortDir=desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audit-logs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "desc"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.2 Filter Audit Logs by entityName=Asset & action=ASSIGN (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Filtered records match entity Asset and action ASSIGN\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    jsonData.data.content.forEach(function(log) {",
+									"        pm.expect(log.entityName.toLowerCase()).to.eql('asset');",
+									"        pm.expect(log.action).to.eql('ASSIGN');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/audit-logs?entityName=Asset&action=ASSIGN",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audit-logs"
+							],
+							"query": [
+								{
+									"key": "entityName",
+									"value": "Asset"
+								},
+								{
+									"key": "action",
+									"value": "ASSIGN"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.3 Filter Audit Logs by username=admin (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Filtered records captured by admin operator\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    jsonData.data.content.forEach(function(log) {",
+									"        pm.expect(log.usernameSnapshot.toLowerCase()).to.include('admin');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/audit-logs?username=admin",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audit-logs"
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "admin"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.4 Get Audit Log by ID with JSONB Snapshots (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Audit Log details contain state snapshots\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data.id).to.eql(Number(pm.collectionVariables.get(\"lastAuditLogId\")));",
+									"    pm.expect(jsonData.data).to.have.property('oldValue');",
+									"    pm.expect(jsonData.data).to.have.property('newValue');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/audit-logs/{{lastAuditLogId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audit-logs",
+								"{{lastAuditLogId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "6.5 Unauthorized Employee Access Attempt (403 Forbidden)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403 Forbidden\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{employeeAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/audit-logs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audit-logs"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Data Export & Background Jobs",
+			"item": [
+				{
+					"name": "7.1 Direct Streaming Employees (CSV - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is text/csv\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/csv\");",
+									"});",
+									"",
+									"pm.test(\"Content-Disposition specifies employees CSV attachment\", function () {",
+									"    var cd = pm.response.headers.get(\"Content-Disposition\");",
+									"    pm.expect(cd).to.include(\"attachment\");",
+									"    pm.expect(cd).to.include(\"employees_\");",
+									"    pm.expect(cd).to.include(\".csv\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exports/employees?format=CSV",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exports",
+								"employees"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "CSV"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "7.2 Direct Streaming Assets (Excel XLSX - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is Excel spreadsheetml\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"spreadsheetml.sheet\");",
+									"});",
+									"",
+									"pm.test(\"Content-Disposition specifies assets Excel attachment\", function () {",
+									"    var cd = pm.response.headers.get(\"Content-Disposition\");",
+									"    pm.expect(cd).to.include(\"attachment\");",
+									"    pm.expect(cd).to.include(\"assets_\");",
+									"    pm.expect(cd).to.include(\".xlsx\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{managerAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exports/assets?format=EXCEL",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exports",
+								"assets"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "EXCEL"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "7.3 Direct Streaming Departments (CSV - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Disposition contains departments CSV\", function () {",
+									"    var cd = pm.response.headers.get(\"Content-Disposition\");",
+									"    pm.expect(cd).to.include(\"departments_\");",
+									"    pm.expect(cd).to.include(\".csv\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exports/departments?format=CSV",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exports",
+								"departments"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "CSV"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "7.4 Direct Streaming Audit Logs (Excel XLSX - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Disposition contains audit logs XLSX\", function () {",
+									"    var cd = pm.response.headers.get(\"Content-Disposition\");",
+									"    pm.expect(cd).to.include(\"audit_logs_\");",
+									"    pm.expect(cd).to.include(\".xlsx\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exports/audit-logs?format=EXCEL",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exports",
+								"audit-logs"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "EXCEL"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "7.5 Create Async Export Job (POST /jobs - 202 Accepted)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 202 Accepted\", function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Async export job accepted with tracking UUID\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data.jobUuid).to.be.a('string');",
+									"    pm.expect(jsonData.data.exportType).to.eql('EMPLOYEES');",
+									"    pm.expect(jsonData.data.format).to.eql('CSV');",
+									"    ",
+									"    pm.collectionVariables.set(\"exportJobUuid\", jsonData.data.jobUuid);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"exportType\": \"EMPLOYEES\",\n    \"format\": \"CSV\",\n    \"filters\": {\n        \"status\": \"ACTIVE\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exports/jobs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exports",
+								"jobs"
+							]
+						}
+					}
+				},
+				{
+					"name": "7.6 Poll Async Export Job Status (GET /jobs/{jobUuid} - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Job status and progress returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data.jobUuid).to.eql(pm.collectionVariables.get(\"exportJobUuid\"));",
+									"    pm.expect(['PENDING', 'PROCESSING', 'COMPLETED']).to.include(jsonData.data.status);",
+									"    pm.expect(jsonData.data.progressPercentage).to.be.at.least(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exports/jobs/{{exportJobUuid}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exports",
+								"jobs",
+								"{{exportJobUuid}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "7.7 List User Export Jobs (GET /jobs - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Export job history retrieved with pagination envelope\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.data.content).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exports/jobs?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exports",
+								"jobs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "7.8 Download Generated Export File (GET /jobs/{jobUuid}/download - 200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK (or 404/500 if still processing)\", function () {",
+									"    pm.expect([200, 404, 500]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exports/jobs/{{exportJobUuid}}/download",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exports",
+								"jobs",
+								"{{exportJobUuid}}",
+								"download"
+							]
+						}
+					}
+				},
+				{
+					"name": "7.9 Unauthorized Export Attempt (Employee - 403 Forbidden)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403 Forbidden\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{employeeAccessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"exportType\": \"AUDIT_LOGS\",\n    \"format\": \"EXCEL\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/exports/jobs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exports",
+								"jobs"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Resilience, Rate Limiting & Health",
+			"item": [
+				{
+					"name": "8.1 Actuator Health & Probes (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Health status is UP\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(\"UP\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					}
+				},
+				{
+					"name": "8.2 Resilience4j Circuit Breakers Status (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Contains circuit breakers configuration\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('circuitBreakers');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/circuitbreakers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"circuitbreakers"
+							]
+						}
+					}
+				},
+				{
+					"name": "8.3 Verify Rate Limit RFC Headers on Auth Endpoint (200 OK)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Rate limit headers exist\", function () {",
+									"    pm.expect(pm.response.headers.has(\"X-RateLimit-Limit\")).to.be.true;",
+									"    pm.expect(pm.response.headers.has(\"X-RateLimit-Remaining\")).to.be.true;",
+									"    pm.expect(pm.response.headers.has(\"X-RateLimit-Reset\")).to.be.true;",
+									"});",
+									"",
+									"pm.test(\"Status code is 200 OK on valid credentials\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"usernameOrEmail\": \"{{adminUsername}}\",\n    \"password\": \"{{adminPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "adminUsername",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "adminPassword",
+			"value": "Admin@123",
+			"type": "string"
+		},
+		{
+			"key": "managerUsername",
+			"value": "manager",
+			"type": "string"
+		},
+		{
+			"key": "managerPassword",
+			"value": "Manager@123",
+			"type": "string"
+		},
+		{
+			"key": "employeeUsername",
+			"value": "employee",
+			"type": "string"
+		},
+		{
+			"key": "employeePassword",
+			"value": "Employee@123",
+			"type": "string"
+		},
+		{
+			"key": "adminAccessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "adminRefreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "managerAccessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "managerRefreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "employeeAccessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "employeeRefreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "createdDepartmentId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "createdEmployeeId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "createdCategoryId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "createdAssetId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "lastAuditLogId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "exportJobUuid",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

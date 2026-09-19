@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#040806" />
+      <stop offset="100%" stop-color="#000000" />
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="12" y1="8" x2="52" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="40%" stop-color="#06b6d4" />
+      <stop offset="70%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#f43f5e" />
+    </linearGradient>
+    <linearGradient id="cubeTop" x1="32" y1="18" x2="32" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <linearGradient id="cubeLeft" x1="20" y1="28" x2="32" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </linearGradient>
+    <linearGradient id="cubeRight" x1="44" y1="28" x2="32" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#bgGrad)" stroke="#1f2937" stroke-width="1.5" />
+  <path d="M32 9L15 16V30C15 42 22.5 50.5 32 55C41.5 50.5 49 42 49 30V16L32 9Z" fill="#09110d" fill-opacity="0.9" stroke="url(#shieldGrad)" stroke-width="2.5" stroke-linejoin="round" />
+  <polygon points="32,20 42,26 32,32 22,26" fill="url(#cubeTop)" />
+  <polygon points="22,26 32,32 32,44 22,38" fill="url(#cubeLeft)" />
+  <polygon points="32,32 42,26 42,38 32,44" fill="url(#cubeRight)" />
+  <circle cx="32" cy="32" r="1.5" fill="#ffffff" />
+</svg>
