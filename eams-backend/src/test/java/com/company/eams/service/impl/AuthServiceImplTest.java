@@ -1,11 +1,15 @@
 package com.company.eams.service.impl;
 
+import com.company.eams.dto.request.ForgotPasswordVerifyRequest;
 import com.company.eams.dto.request.LoginRequest;
+import com.company.eams.dto.request.ResetPasswordRequest;
 import com.company.eams.dto.response.AuthResponse;
+import com.company.eams.dto.response.ForgotPasswordVerifyResponse;
 import com.company.eams.entity.RefreshToken;
 import com.company.eams.entity.Role;
 import com.company.eams.entity.User;
 import com.company.eams.entity.enums.RoleType;
+import com.company.eams.exception.ResourceNotFoundException;
 import com.company.eams.exception.TokenRefreshException;
 import com.company.eams.repository.RefreshTokenRepository;
 import com.company.eams.repository.UserRepository;
@@ -19,11 +23,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -49,6 +55,12 @@ class AuthServiceImplTest {
     private JwtService jwtService;
 
     @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Mock
     private HttpServletResponse httpServletResponse;
 
     @InjectMocks
@@ -56,6 +68,7 @@ class AuthServiceImplTest {
 
     private User testUser;
     private UserPrincipal userPrincipal;
+
 
     @BeforeEach
     void setUp() {
@@ -149,4 +162,52 @@ class AuthServiceImplTest {
     void testRefreshTokenEmptyThrowsException() {
         assertThrows(TokenRefreshException.class, () -> authService.refreshToken("", httpServletResponse));
     }
+
+    @Test
+    @DisplayName("Verify for password reset successfully returns masked email and reset token")
+    void testVerifyForPasswordReset_Success() {
+        ForgotPasswordVerifyRequest request = new ForgotPasswordVerifyRequest("admin_test");
+        when(userRepository.findByUsername("admin_test")).thenReturn(Optional.of(testUser));
+
+        ForgotPasswordVerifyResponse response = authService.verifyForPasswordReset(request);
+
+        assertNotNull(response);
+        assertEquals("admin_test", response.getUsername());
+        assertNotNull(response.getResetToken());
+        assertTrue(response.getMaskedEmail().contains("@"));
+    }
+
+    @Test
+    @DisplayName("Verify for password reset throws ResourceNotFoundException for non-existent user")
+    void testVerifyForPasswordReset_NotFound() {
+        ForgotPasswordVerifyRequest request = new ForgotPasswordVerifyRequest("non_existent_user");
+        when(userRepository.findByUsername("non_existent_user")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("non_existent_user")).thenReturn(Optional.empty());
+        when(userRepository.findByUsernameOrEmail("non_existent_user", "non_existent_user")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> authService.verifyForPasswordReset(request));
+    }
+
+    @Test
+    @DisplayName("Verify for password reset throws DisabledException for deactivated user")
+    void testVerifyForPasswordReset_DeactivatedUser() {
+        testUser.setIsActive(false);
+        ForgotPasswordVerifyRequest request = new ForgotPasswordVerifyRequest("admin_test");
+        when(userRepository.findByUsername("admin_test")).thenReturn(Optional.of(testUser));
+
+        assertThrows(DisabledException.class, () -> authService.verifyForPasswordReset(request));
+    }
+
+    @Test
+    @DisplayName("Reset password throws IllegalArgumentException if new password and confirm password do not match")
+    void testResetPassword_MismatchedPasswords() {
+        ResetPasswordRequest request = ResetPasswordRequest.builder()
+                .resetToken("test-token")
+                .newPassword("NewPass@123")
+                .confirmPassword("Mismatch@123")
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(request));
+    }
 }
+

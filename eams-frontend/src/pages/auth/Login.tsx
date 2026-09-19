@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ShieldCheck, Lock, User, ArrowRight, Eye, EyeOff, CheckCircle2, Sparkles } from 'lucide-react';
 import { useToast } from '../../components/common/Toast';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
+import { ForgotPasswordModal } from '../../components/auth/ForgotPasswordModal';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('Admin@123');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
+
 
   const from = (location.state as any)?.from?.pathname || '/';
 
@@ -90,9 +93,18 @@ export const Login: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider text-[10px]">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[10px]">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsForgotOpen(true)}
+                  className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline transition-all"
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -181,8 +193,20 @@ export const Login: React.FC = () => {
           Enterprise Employee & Asset Management System • Spring Boot 3 & React
         </p>
       </div>
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={isForgotOpen}
+        onClose={() => setIsForgotOpen(false)}
+        onSuccess={(user) => {
+          setUsernameOrEmail(user);
+          setPassword('');
+          showSuccess('Password reset successful! Please sign in with your new password.');
+        }}
+      />
     </div>
   );
 };
 
 export default Login;
+

@@ -1,10 +1,14 @@
 package com.company.eams.controller;
 
+import com.company.eams.dto.request.ForgotPasswordVerifyRequest;
 import com.company.eams.dto.request.LoginRequest;
 import com.company.eams.dto.request.RefreshTokenRequest;
+import com.company.eams.dto.request.ResetPasswordRequest;
 import com.company.eams.dto.response.ApiResponse;
 import com.company.eams.dto.response.AuthResponse;
+import com.company.eams.dto.response.ForgotPasswordVerifyResponse;
 import com.company.eams.dto.response.UserSummaryDto;
+
 import com.company.eams.security.UserPrincipal;
 import com.company.eams.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -67,6 +71,22 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.message("User logged out successfully"));
     }
 
+    @PostMapping("/forgot-password/verify")
+    @Operation(summary = "Verify account for password reset", description = "Validates registered company username or email and returns a temporary reset token")
+    public ResponseEntity<ApiResponse<ForgotPasswordVerifyResponse>> verifyForPasswordReset(
+            @Valid @RequestBody ForgotPasswordVerifyRequest request) {
+        ForgotPasswordVerifyResponse response = authService.verifyForPasswordReset(request);
+        return ResponseEntity.ok(ApiResponse.success(response, response.getMessage()));
+    }
+
+    @PostMapping("/forgot-password/reset")
+    @Operation(summary = "Reset account password", description = "Updates account password using a valid reset token and invalidates active sessions")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.message("Password updated successfully. Please sign in with your new credentials."));
+    }
+
     @GetMapping("/me")
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Get current authenticated profile", description = "Returns metadata, assigned role, and permissions for the currently authenticated user")
@@ -76,3 +96,4 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(userSummary, "Current user profile retrieved"));
     }
 }
+

@@ -1,8 +1,11 @@
 package com.company.eams.service.impl;
 
 import com.company.eams.audit.annotation.Auditable;
+import com.company.eams.dto.request.ForgotPasswordVerifyRequest;
 import com.company.eams.dto.request.LoginRequest;
+import com.company.eams.dto.request.ResetPasswordRequest;
 import com.company.eams.dto.response.AuthResponse;
+import com.company.eams.dto.response.ForgotPasswordVerifyResponse;
 import com.company.eams.dto.response.UserSummaryDto;
 import com.company.eams.entity.RefreshToken;
 import com.company.eams.entity.User;
@@ -17,6 +20,7 @@ import com.company.eams.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,12 +28,17 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -41,6 +50,15 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
+    private final StringRedisTemplate stringRedisTemplate;
+
+    private static final String RESET_TOKEN_PREFIX = "eams:pwd_reset:";
+    private static final long RESET_TOKEN_TTL_SECONDS = 900; // 15 minutes
+    private static final Map<String, ResetTokenEntry> IN_MEMORY_RESET_TOKENS = new ConcurrentHashMap<>();
+
+    private record ResetTokenEntry(String username, Instant expiresAt) {}
+
 
     @Override
     @Transactional
@@ -223,4 +241,127 @@ public class AuthServiceImpl implements AuthService {
                 .isActive(user.getIsActive())
                 .build();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ForgotPasswordVerifyResponse verifyForPasswordReset(ForgotPasswordVerifyRequest request) {
+        String identifier = request.getUsernameOrEmail() != null ? request.getUsernameOrEmail().trim() : "";
+        if (!StringUtils.hasText(identifier)) {
+            throw new IllegalArgumentException("Username or company email is required.");
+        }
+
+        log.info("Verifying user account for password reset: {}", identifier);
+
+        User user = userRepository.findByUsername(identifier)
+                .or(() -> userRepository.findByEmail(identifier))
+                .or(() -> userRepository.findByUsernameOrEmail(identifier, identifier))
+                .orElseThrow(() -> new ResourceNotFoundException("No company account found matching: " + identifier));
+
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new DisabledException("This employee account has been deactivated. Please contact company HR or Administrator.");
+        }
+
+        String resetToken = UUID.randomUUID().toString();
+        String redisKey = RESET_TOKEN_PREFIX + resetToken;
+
+        try {
+            if (stringRedisTemplate != null) {
+                stringRedisTemplate.opsForValue().set(redisKey, user.getUsername(), Duration.ofSeconds(RESET_TOKEN_TTL_SECONDS));
+            }
+        } catch (Exception ex) {
+            log.warn("Redis unavailable for password reset token, using in-memory store: {}", ex.getMessage());
+        }
+
+        IN_MEMORY_RESET_TOKENS.put(resetToken, new ResetTokenEntry(user.getUsername(), Instant.now().plusSeconds(RESET_TOKEN_TTL_SECONDS)));
+
+        String maskedEmail = maskEmail(user.getEmail());
+
+        log.info("Password reset token generated for user: {}", user.getUsername());
+
+        return ForgotPasswordVerifyResponse.builder()
+                .resetToken(resetToken)
+                .username(user.getUsername())
+                .maskedEmail(maskedEmail)
+                .expiresIn(RESET_TOKEN_TTL_SECONDS)
+                .message("Account verified successfully. Please enter your new password.")
+                .build();
+    }
+
+    @Override
+    @Transactional
+    @Auditable(action = AuditAction.UPDATE, entityName = "User", description = "Password reset successfully")
+    public void resetPassword(ResetPasswordRequest request) {
+        if (!StringUtils.hasText(request.getResetToken())) {
+            throw new IllegalArgumentException("Reset token is required.");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("New password and confirm password do not match.");
+        }
+
+        String resetToken = request.getResetToken().trim();
+        String username = null;
+
+        // 1. Check Redis
+        try {
+            if (stringRedisTemplate != null) {
+                username = stringRedisTemplate.opsForValue().get(RESET_TOKEN_PREFIX + resetToken);
+            }
+        } catch (Exception ex) {
+            log.warn("Redis lookup failed during password reset: {}", ex.getMessage());
+        }
+
+        // 2. Check in-memory fallback
+        if (!StringUtils.hasText(username)) {
+            ResetTokenEntry entry = IN_MEMORY_RESET_TOKENS.get(resetToken);
+            if (entry != null) {
+                if (entry.expiresAt().isAfter(Instant.now())) {
+                    username = entry.username();
+                } else {
+                    IN_MEMORY_RESET_TOKENS.remove(resetToken);
+                }
+            }
+        }
+
+        if (!StringUtils.hasText(username)) {
+            throw new IllegalArgumentException("Password reset session has expired or is invalid. Please verify your account again.");
+        }
+
+        final String targetUsername = username;
+        User user = userRepository.findByUsername(targetUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", targetUsername));
+
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new DisabledException("Account is deactivated. Cannot reset password.");
+        }
+
+        // 3. Update password hash
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // 4. Revoke all existing refresh tokens for security
+        refreshTokenRepository.revokeAllByUserId(user.getId());
+
+        // 5. Invalidate the reset token
+        try {
+            if (stringRedisTemplate != null) {
+                stringRedisTemplate.delete(RESET_TOKEN_PREFIX + resetToken);
+            }
+        } catch (Exception ignored) {}
+        IN_MEMORY_RESET_TOKENS.remove(resetToken);
+
+        log.info("Password successfully reset for user: {}", targetUsername);
+    }
+
+    private String maskEmail(String email) {
+        if (email == null || !email.contains("@")) return "******";
+        String[] parts = email.split("@", 2);
+        String name = parts[0];
+        String domain = parts[1];
+        if (name.length() <= 2) {
+            return name.charAt(0) + "***@" + domain;
+        }
+        return name.charAt(0) + "***" + name.charAt(name.length() - 1) + "@" + domain;
+    }
 }
+

@@ -25,3 +25,22 @@ export interface LoginRequest {
 export interface RefreshTokenRequest {
   refreshToken: string;
 }
+
+export interface ForgotPasswordVerifyRequest {
+  usernameOrEmail: string;
+}
+
+export interface ForgotPasswordVerifyResponse {
+  resetToken: string;
+  username: string;
+  maskedEmail: string;
+  expiresIn: number;
+  message: string;
+}
+
+export interface ResetPasswordRequest {
+  resetToken: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
