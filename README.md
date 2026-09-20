@@ -2,8 +2,8 @@
 
 <div align="center">
 
-[![CI Pipeline](https://github.com/aadarsh2006ak/Enterprise-Employee-Asset-Mgmt.-Sys.-RBAC-/actions/workflows/ci.yml/badge.svg)](https://github.com/aadarsh2006ak/Enterprise-Employee-Asset-Mgmt.-Sys.-RBAC-/actions/workflows/ci.yml)
-[![AWS ECS Deploy](https://github.com/aadarsh2006ak/Enterprise-Employee-Asset-Mgmt.-Sys.-RBAC-/actions/workflows/deploy-aws.yml/badge.svg)](https://github.com/aadarsh2006ak/Enterprise-Employee-Asset-Mgmt.-Sys.-RBAC-/actions/workflows/deploy-aws.yml)
+[![CI Pipeline](https://github.com/aadarsh2006ak/Enterprise-Employee-Asset-Mgmt.-Sys.-RBAC-/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/aadarsh2006ak/Enterprise-Employee-Asset-Mgmt.-Sys.-RBAC-/actions/workflows/ci.yml)
+[![AWS Deployment](https://img.shields.io/badge/AWS%20ECS%20Deployment-Fargate%20Ready-FF9900.svg?logo=amazonaws)](deploy/aws/)
 [![Tests Passed](https://img.shields.io/badge/Tests-75%2F75%20Passed%20(100%25)-brightgreen.svg?logo=checkmarx)](eams-backend/src/test)
 [![Java 17 LTS](https://img.shields.io/badge/Java-17%20LTS-orange.svg?logo=openjdk)](https://adoptium.net/)
 [![Spring Boot 3.3](https://img.shields.io/badge/Spring%20Boot-3.3.0-brightgreen.svg?logo=springboot)](https://spring.io/projects/spring-boot)
@@ -12,7 +12,6 @@
 [![Redis 7](https://img.shields.io/badge/Redis-7%20Alpine-DC382D.svg?logo=redis)](https://redis.io/)
 [![Docker Microservices](https://img.shields.io/badge/Docker-6%20Microservices-2496ED.svg?logo=docker)](docker-compose.yml)
 [![Prometheus & Grafana](https://img.shields.io/badge/Observability-Prometheus%20%2B%20Grafana-F46800.svg?logo=grafana)](monitoring/)
-[![AWS ECS Fargate](https://img.shields.io/badge/Cloud-AWS%20ECS%20Fargate-FF9900.svg?logo=amazonaws)](deploy/aws/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 <p align="center">
