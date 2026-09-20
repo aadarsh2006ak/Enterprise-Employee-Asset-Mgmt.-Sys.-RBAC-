@@ -2,7 +2,6 @@ package com.company.eams.controller;
 
 import com.company.eams.dto.request.ExportJobRequest;
 import com.company.eams.dto.response.ExportJobResponse;
-import com.company.eams.dto.response.PageResponse;
 import com.company.eams.entity.enums.ExportFormat;
 import com.company.eams.entity.enums.ExportJobStatus;
 import com.company.eams.entity.enums.ExportType;
@@ -16,15 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;

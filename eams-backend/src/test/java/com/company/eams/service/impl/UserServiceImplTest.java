@@ -8,7 +8,6 @@ import com.company.eams.entity.Role;
 import com.company.eams.entity.User;
 import com.company.eams.entity.enums.RoleType;
 import com.company.eams.exception.ConflictException;
-import com.company.eams.exception.ResourceNotFoundException;
 import com.company.eams.repository.RefreshTokenRepository;
 import com.company.eams.repository.RoleRepository;
 import com.company.eams.repository.UserRepository;

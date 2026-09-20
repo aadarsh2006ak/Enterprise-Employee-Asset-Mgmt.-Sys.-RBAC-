@@ -1,7 +1,6 @@
 package com.company.eams.controller;
 
 import com.company.eams.dto.request.AssetCategoryRequest;
-import com.company.eams.dto.request.AssetCreateRequest;
 import com.company.eams.dto.response.AssetCategoryResponse;
 import com.company.eams.dto.response.AssetResponse;
 import com.company.eams.dto.response.PageResponse;

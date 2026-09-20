@@ -19,13 +19,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.mockito.ArgumentMatchers;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -61,7 +61,7 @@ class AuditLogServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<AuditLog> page = new PageImpl<>(List.of(sampleLog), pageable, 1);
 
-        when(auditLogRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(auditLogRepository.findAll(ArgumentMatchers.<Specification<AuditLog>>any(), eq(pageable))).thenReturn(page);
 
         PageResponse<AuditLogResponse> response = auditLogService.getAllAuditLogs(
                 pageable, "Asset", 50L, AuditAction.CREATE, "admin", 1L, null, null

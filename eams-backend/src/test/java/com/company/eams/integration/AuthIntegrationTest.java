@@ -6,7 +6,6 @@ import com.company.eams.dto.response.AuthResponse;
 import com.company.eams.entity.Role;
 import com.company.eams.entity.User;
 import com.company.eams.entity.enums.RoleType;
-import com.company.eams.repository.RefreshTokenRepository;
 import com.company.eams.repository.RoleRepository;
 import com.company.eams.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,9 +29,6 @@ class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private RoleRepository roleRepository;
-
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;

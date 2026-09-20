@@ -1,14 +1,11 @@
 package com.company.eams.controller;
 
-import com.company.eams.dto.request.UserCreateAdminRequest;
-import com.company.eams.dto.request.UserRoleUpdateRequest;
 import com.company.eams.dto.response.PageResponse;
 import com.company.eams.dto.response.UserResponseDto;
 import com.company.eams.entity.enums.RoleType;
 import com.company.eams.security.CustomUserDetailsService;
 import com.company.eams.security.JwtService;
 import com.company.eams.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +25,6 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,8 +44,6 @@ class AdminUserControllerTest {
 
     @MockBean
     private JwtService jwtService;
-
-    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     @Test
     @WithMockUser(roles = {"ADMIN"})
