@@ -165,7 +165,7 @@ class AuthServiceImplTest {
 
     @Test
     @DisplayName("Verify for password reset successfully returns masked email and reset token")
-    void testVerifyForPasswordReset_Success() {
+    void testVerifyForPasswordReset_Success1() {
         ForgotPasswordVerifyRequest request = new ForgotPasswordVerifyRequest("admin_test");
         when(userRepository.findByUsername("admin_test")).thenReturn(Optional.of(testUser));
 
@@ -179,7 +179,7 @@ class AuthServiceImplTest {
 
     @Test
     @DisplayName("Verify for password reset throws ResourceNotFoundException for non-existent user")
-    void testVerifyForPasswordReset_NotFound() {
+    void testVerifyForPasswordReset_NotFound1() {
         ForgotPasswordVerifyRequest request = new ForgotPasswordVerifyRequest("non_existent_user");
         when(userRepository.findByUsername("non_existent_user")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("non_existent_user")).thenReturn(Optional.empty());
