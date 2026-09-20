@@ -1,9 +1,12 @@
 name: EAMS CD - Deploy to AWS ECS Fargate
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target Deployment Environment'
+        required: true
+        default: 'production'
 
 env:
   AWS_REGION: ap-south-1
