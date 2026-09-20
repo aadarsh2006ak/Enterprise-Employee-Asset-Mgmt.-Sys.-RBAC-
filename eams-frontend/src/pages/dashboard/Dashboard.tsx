@@ -82,22 +82,22 @@ export const Dashboard: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3 flex-shrink-0">
             {hasPermission('ASSET_CREATE') && (
               <Link
                 to="/assets"
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl btn-theme-primary text-xs font-bold transition-all active:scale-[0.98]"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 h-10 rounded-xl btn-theme-primary text-xs font-bold whitespace-nowrap transition-all active:scale-[0.98] shadow-sm hover:shadow-glow"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 flex-shrink-0" />
                 <span>Catalog New Asset</span>
               </Link>
             )}
             <Link
               to="/my-assets"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-black/40 hover:bg-slate-200 dark:hover:bg-black/60 border border-slate-300 dark:border-white/[0.12] text-slate-800 dark:text-slate-200 text-xs font-bold transition-all shadow-sm active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 h-10 rounded-xl bg-slate-100 dark:bg-black/40 hover:bg-slate-200 dark:hover:bg-black/60 border border-slate-300 dark:border-white/[0.12] text-slate-800 dark:text-slate-200 text-xs font-bold whitespace-nowrap transition-all shadow-sm active:scale-[0.98]"
             >
               <span>My Assets ({myAssetsData?.length || 0})</span>
-              <ArrowUpRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              <ArrowUpRight className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
             </Link>
           </div>
         </div>

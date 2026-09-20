@@ -27,7 +27,7 @@ import java.time.Instant;
 public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final DistributedRateLimiterService rateLimiterService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     @Value("${eams.resilience.rate-limiting.enabled:true}")
     private boolean rateLimitingEnabled;

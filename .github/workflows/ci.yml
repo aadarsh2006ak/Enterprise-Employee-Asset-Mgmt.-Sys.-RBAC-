@@ -1,0 +1,140 @@
+name: EAMS Continuous Integration (CI)
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  # ============================================================================
+  # 1. Backend CI Pipeline (Java 17 / Spring Boot / Testcontainers / JUnit 5)
+  # ============================================================================
+  backend-ci:
+    name: Backend Build & Unit/Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run Maven Tests & Package
+        working-directory: ./eams-backend
+        run: mvn clean verify -B
+
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-test-reports
+          path: eams-backend/target/surefire-reports/
+
+  # ============================================================================
+  # 2. Frontend CI Pipeline (Node.js 20 / React / TypeScript / Vite)
+  # ============================================================================
+  frontend-ci:
+    name: Frontend Lint & Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: eams-frontend/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: ./eams-frontend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: ./eams-frontend
+        run: npm run lint
+
+      - name: Run TypeScript Compile & Vite Build
+        working-directory: ./eams-frontend
+        run: npm run build
+
+  # ============================================================================
+  # 3. Security Vulnerability & Dependency Scanning (OWASP & Trivy)
+  # ============================================================================
+  security-scan:
+    name: OWASP Dependency-Check & Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run OWASP Dependency-Check on Maven Dependencies
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'eams-backend'
+          path: './eams-backend'
+          format: 'HTML'
+          args: >
+            --suppression ./eams-backend/suppression.xml
+            --failOnCVSS 8
+        continue-on-error: true
+
+      - name: Upload OWASP Security Scan Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: owasp-dependency-check-report
+          path: reports/
+
+      - name: Run Trivy Repository Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
+
+  # ============================================================================
+  # 4. Docker Container Build Sanity Check
+  # ============================================================================
+  docker-build-check:
+    name: Docker Multi-Stage Image Build Validation
+    needs: [backend-ci, frontend-ci, security-scan]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./eams-backend
+          push: false
+          tags: eams-backend:ci-test
+
+      - name: Build Frontend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./eams-frontend
+          push: false
+          tags: eams-frontend:ci-test

@@ -133,8 +133,12 @@ public class AuditAspect {
                 for (int i = 0; i < paramNames.length; i++) {
                     String name = paramNames[i];
                     Object arg = args[i];
-                    // Skip sensitive fields or framework objects
-                    if (arg instanceof HttpServletRequest || name.toLowerCase().contains("password") || name.toLowerCase().contains("token")) {
+                    // Skip sensitive fields or framework/servlet objects
+                    if (arg instanceof jakarta.servlet.ServletRequest ||
+                        arg instanceof jakarta.servlet.ServletResponse ||
+                        name.toLowerCase().contains("password") ||
+                        name.toLowerCase().contains("token") ||
+                        name.toLowerCase().contains("secret")) {
                         continue;
                     }
                     if (arg != null) {

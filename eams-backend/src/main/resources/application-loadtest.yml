@@ -1,0 +1,56 @@
+server:
+  port: ${SERVER_PORT:8080}
+  tomcat:
+    threads:
+      max: 400
+      min-spare: 50
+    accept-count: 500
+    max-connections: 10000
+
+spring:
+  config:
+    activate:
+      on-profile: loadtest
+
+  datasource:
+    hikari:
+      pool-name: EAMSLoadTestHikariCP
+      maximum-pool-size: 60
+      minimum-idle: 20
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      leak-detection-threshold: 20000
+
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          batch_size: 50
+
+  data:
+    redis:
+      lettuce:
+        pool:
+          max-active: 64
+          max-idle: 32
+          min-idle: 8
+          max-wait: 3000ms
+
+# Resilience & Rate Limiting tuned for Load Testing (Prevents artificial 429 throttling during load benchmarks)
+eams:
+  resilience:
+    rate-limiting:
+      enabled: true
+      auth-limit-per-minute: 50000
+      export-limit-per-minute: 10000
+      general-limit-per-minute: 500000
+
+logging:
+  level:
+    root: WARN
+    com.company.eams: INFO
+    org.hibernate: WARN
+    org.springframework.web: WARN

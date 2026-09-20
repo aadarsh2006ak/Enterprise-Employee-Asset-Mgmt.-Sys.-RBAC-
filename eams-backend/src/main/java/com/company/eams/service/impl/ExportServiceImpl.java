@@ -378,7 +378,7 @@ public class ExportServiceImpl implements ExportService {
 
             List<AssetAssignment> assignments = assetId != null
                     ? assetAssignmentRepository.findHistoryByAssetId(assetId)
-                    : assetAssignmentRepository.findAll();
+                    : assetAssignmentRepository.findAllWithDetails();
 
             if (format == ExportFormat.CSV) {
                 try (CsvStreamGenerator csv = new CsvStreamGenerator(os, headers)) {

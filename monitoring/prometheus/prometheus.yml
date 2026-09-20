@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  # 1. Spring Boot EAMS Backend (Actuator Micrometer endpoint)
+  - job_name: 'eams-backend'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['backend:8080']
+        labels:
+          application: 'eams-backend'
+          environment: 'production'
+
+  # 2. Prometheus Self Monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

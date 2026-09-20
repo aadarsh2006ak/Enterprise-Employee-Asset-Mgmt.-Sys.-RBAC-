@@ -1,5 +1,7 @@
 package com.company.eams.service.impl;
 
+import java.util.Map;
+import java.util.function.Function;
 import com.company.eams.audit.annotation.Auditable;
 import com.company.eams.dto.request.*;
 import com.company.eams.dto.response.*;
@@ -120,16 +122,53 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<AssetResponse> getAllAssets(Pageable pageable, Long categoryId, AssetStatus status, String search) {
-        log.debug("Fetching paginated assets: categoryId={}, status={}, search={}", categoryId, status, search);
+    public PageResponse<AssetResponse> getAllAssets(
+            Pageable pageable,
+            Long categoryId,
+            AssetStatus status,
+            String search
+    ) {
+        log.debug(
+                "Fetching paginated assets: categoryId={}, status={}, search={}",
+                categoryId,
+                status,
+                search
+        );
 
-        Specification<Asset> spec = AssetSpecification.filter(categoryId, status, search);
+        Specification<Asset> spec =
+                AssetSpecification.filter(categoryId, status, search);
+
         Page<Asset> page = assetRepository.findAll(spec, pageable);
 
-        Page<AssetResponse> responsePage = page.map(asset -> {
-            Optional<AssetAssignment> activeAssignment = assignmentRepository.findActiveAssignmentByAssetId(asset.getId());
-            return mapToAssetResponse(asset, activeAssignment.orElse(null));
-        });
+        // Collect all asset IDs from the current page
+        List<Long> assetIds = page.getContent()
+                .stream()
+                .map(Asset::getId)
+                .toList();
+
+        // Batch fetch all active assignments in ONE query
+        Map<Long, AssetAssignment> activeAssignmentsByAssetId;
+
+        if (assetIds.isEmpty()) {
+            activeAssignmentsByAssetId = Map.of();
+        } else {
+            activeAssignmentsByAssetId =
+                    assignmentRepository
+                            .findActiveAssignmentsByAssetIdsIn(assetIds)
+                            .stream()
+                            .collect(Collectors.toMap(
+                                    assignment -> assignment.getAsset().getId(),
+                                    Function.identity()
+                            ));
+        }
+
+        // Map assets to responses without additional assignment queries
+        Page<AssetResponse> responsePage = page.map(asset ->
+                mapToAssetResponse(
+                        asset,
+                        activeAssignmentsByAssetId.get(asset.getId())
+                )
+        );
 
         return PageResponse.from(responsePage);
     }
