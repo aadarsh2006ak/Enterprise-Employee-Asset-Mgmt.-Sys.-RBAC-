@@ -28,8 +28,11 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.annotation.Profile;
+
 @Slf4j
 @Configuration
+@Profile("!test")
 public class RedisConfig implements CachingConfigurer {
 
     /**
