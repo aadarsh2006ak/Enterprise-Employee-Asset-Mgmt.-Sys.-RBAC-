@@ -407,8 +407,10 @@ Enterprise-Employee-Asset-Mgmt.-Sys.-RBAC-/
 <a id="author"></a>
 ## 👨‍💻 Author & Engineering Contact
 
-**Aadarsh Kumar**  
+**Aadarsh Tiwari**  
 - **GitHub**: [@aadarsh2006ak](https://github.com/aadarsh2006ak)  
+- **LinkedIn**: [Aadarsh Tiwari](https://www.linkedin.com/in/aadarsh-tiwari-ak)  
+- **Instagram**: [@aadarsh_tiwari_ak](https://www.instagram.com/aadarsh_tiwari_ak?stkn=MWE1NmthcDB5OHRjMA==)  
 - **Repository**: [Enterprise-Employee-Asset-Mgmt.-Sys.-RBAC-](https://github.com/aadarsh2006ak/Enterprise-Employee-Asset-Mgmt.-Sys.-RBAC-)  
 - **Specialization**: Full-Stack Enterprise Engineering • Distributed Systems • Spring Boot • Cloud Architecture • High-Concurrency Backend Systems
 

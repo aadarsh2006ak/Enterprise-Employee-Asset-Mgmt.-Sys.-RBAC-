@@ -12,6 +12,9 @@ import {
   Shield,
   ShieldCheck,
   Zap,
+  Github,
+  Linkedin,
+  Instagram,
 } from 'lucide-react';
 import { RoleBadge } from '../common/Badge';
 
@@ -157,9 +160,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             })}
         </div>
 
-        {/* Bottom Profile Summary Card */}
-        {user && (
-          <div className="p-3 border-t border-slate-200 dark:border-white/[0.08] bg-slate-50/50 dark:bg-black/30">
+        {/* Bottom Profile Summary Card & Social Links */}
+        <div className="p-3 border-t border-slate-200 dark:border-white/[0.08] bg-slate-50/50 dark:bg-black/30 space-y-2.5">
+          {user && (
             <div className="p-2.5 rounded-xl bg-white dark:bg-black/40 border border-slate-200 dark:border-white/[0.08] flex items-center gap-2.5 shadow-sm">
               <div className="relative">
                 <div className="w-8 h-8 rounded-full gradient-accent text-white font-bold text-xs flex items-center justify-center shadow-md">
@@ -173,8 +176,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </div>
               <RoleBadge role={user.role} />
             </div>
+          )}
+
+          {/* Social Developer Profile Links */}
+          <div className="flex items-center justify-center gap-2 pt-1 border-t border-slate-200/60 dark:border-white/[0.05]">
+            <a
+              href="https://github.com/aadarsh2006ak"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="GitHub Profile"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+            >
+              <Github className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/aadarsh-tiwari-ak"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="LinkedIn Profile"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-[#0a66c2] dark:text-slate-400 dark:hover:text-[#0a66c2] hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+            >
+              <Linkedin className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://www.instagram.com/aadarsh_tiwari_ak?stkn=MWE1NmthcDB5OHRjMA=="
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Instagram Profile"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-pink-500 dark:text-slate-400 dark:hover:text-pink-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+            >
+              <Instagram className="w-3.5 h-3.5" />
+            </a>
           </div>
-        )}
+        </div>
       </aside>
     </>
   );

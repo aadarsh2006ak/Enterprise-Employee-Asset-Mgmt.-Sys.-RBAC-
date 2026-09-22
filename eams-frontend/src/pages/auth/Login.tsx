@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ShieldCheck, Lock, User, ArrowRight, Eye, EyeOff, CheckCircle2, Sparkles } from 'lucide-react';
+import { 
+  ShieldCheck, 
+  Lock, 
+  User, 
+  ArrowRight, 
+  Eye, 
+  EyeOff, 
+  CheckCircle2, 
+  Sparkles,
+  Github,
+  Linkedin,
+  Instagram
+} from 'lucide-react';
 import { useToast } from '../../components/common/Toast';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
 import { ForgotPasswordModal } from '../../components/auth/ForgotPasswordModal';
@@ -18,7 +30,6 @@ export const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isForgotOpen, setIsForgotOpen] = useState(false);
-
 
   const from = (location.state as any)?.from?.pathname || '/';
 
@@ -46,14 +57,14 @@ export const Login: React.FC = () => {
   return (
     <div className="min-h-screen ambient-mesh-bg flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans selection:bg-indigo-500 selection:text-white">
       {/* Interactive Cursor-Tracking Grid Background */}
-      <InteractiveGridBackground cellSize={42} glowRadius={280} />
+      <InteractiveGridBackground cellSize={40} glowRadius={260} />
 
       {/* Top Right Theme Selector */}
       <div className="absolute top-5 right-5 z-20">
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-md z-10 space-y-6">
+      <div className="w-full max-w-md z-10 space-y-5">
         {/* Brand Logo & Header */}
         <div className="text-center space-y-3">
           <div className="inline-flex p-1 rounded-2xl gradient-accent shadow-xl mb-1 animate-float">
@@ -72,7 +83,7 @@ export const Login: React.FC = () => {
         </div>
 
         {/* Main Card */}
-        <div className="glass-panel p-8 rounded-3xl shadow-glass space-y-6">
+        <div className="glass-panel p-7 sm:p-8 rounded-3xl shadow-glass space-y-5">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider text-[10px]">
@@ -141,7 +152,7 @@ export const Login: React.FC = () => {
           </form>
 
           {/* Quick Demo Credentials */}
-          <div className="pt-4 border-t border-slate-200 dark:border-white/[0.08] space-y-3">
+          <div className="pt-4 border-t border-slate-200 dark:border-white/[0.08] space-y-2.5">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 Quick Demo Role Login
@@ -187,8 +198,54 @@ export const Login: React.FC = () => {
           </div>
         </div>
 
+        {/* Developer Connect Social Bar */}
+        <div className="flex flex-col items-center gap-2.5 pt-1">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-[1px] bg-slate-300 dark:bg-slate-700"></span>
+            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Developer Profile
+            </span>
+            <span className="w-6 h-[1px] bg-slate-300 dark:bg-slate-700"></span>
+          </div>
+
+          <div className="flex items-center justify-center gap-2.5 flex-wrap">
+            {/* GitHub */}
+            <a
+              href="https://github.com/aadarsh2006ak"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-white/[0.1] text-slate-700 dark:text-slate-300 hover:text-white hover:bg-slate-900 dark:hover:bg-white/[0.15] hover:border-slate-400 transition-all duration-200 text-xs font-semibold shadow-sm hover:scale-105 group"
+            >
+              <Github className="w-3.5 h-3.5 text-slate-800 dark:text-white group-hover:rotate-12 transition-transform" />
+              <span>GitHub</span>
+            </a>
+
+            {/* LinkedIn */}
+            <a
+              href="https://www.linkedin.com/in/aadarsh-tiwari-ak"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-white/[0.1] text-slate-700 dark:text-slate-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:border-blue-500/50 transition-all duration-200 text-xs font-semibold shadow-sm hover:scale-105 group"
+            >
+              <Linkedin className="w-3.5 h-3.5 text-[#0a66c2] group-hover:scale-110 transition-transform" />
+              <span>LinkedIn</span>
+            </a>
+
+            {/* Instagram */}
+            <a
+              href="https://www.instagram.com/aadarsh_tiwari_ak?stkn=MWE1NmthcDB5OHRjMA=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-white/[0.1] text-slate-700 dark:text-slate-300 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/40 hover:border-pink-500/50 transition-all duration-200 text-xs font-semibold shadow-sm hover:scale-105 group"
+            >
+              <Instagram className="w-3.5 h-3.5 text-pink-500 group-hover:scale-110 transition-transform" />
+              <span>Instagram</span>
+            </a>
+          </div>
+        </div>
+
         {/* Footer info */}
-        <p className="text-center text-[11px] text-slate-500 font-medium">
+        <p className="text-center text-[10px] text-slate-500 font-medium">
           Enterprise Employee & Asset Management System • Spring Boot 3 & React
         </p>
       </div>
