@@ -67,7 +67,26 @@ docker compose down -v
 
 ---
 
-## ☁️ 3. AWS ECS Fargate Production Deployment
+## ☁️ 3. AWS EC2 Deployment (Fast, Easy & Free Tier Friendly)
+
+For single VM deployment on AWS EC2 (Ubuntu 24.04 LTS) with automated swap, Docker, and full stack orchestration:
+
+```bash
+# 1. SSH into your EC2 Instance
+ssh -i "eams-key.pem" ubuntu@<YOUR_EC2_PUBLIC_IP>
+
+# 2. Clone repo and run automated setup script
+git clone https://github.com/aadarsh2006ak/Enterprise-Employee-Asset-Mgmt.-Sys.-RBAC-.git eams-project
+cd eams-project
+chmod +x ./deploy/aws/ec2/setup-ec2.sh
+./deploy/aws/ec2/setup-ec2.sh
+```
+
+> 📖 **Full Walkthrough**: Detailed console instructions, security group configurations, and domain/SSL setup can be found in [EC2_DEPLOYMENT_GUIDE.md](file:///deploy/aws/ec2/EC2_DEPLOYMENT_GUIDE.md).
+
+---
+
+## ☁️ 4. AWS ECS Fargate Production Deployment
 
 ### Prerequisites:
 1. **AWS CLI** installed and configured (`aws configure`).
