@@ -20,9 +20,25 @@
   <i>Engineered with Spring Boot 3, React 18, PostgreSQL 15, Redis 7, Distributed Rate Limiting, Optimistic Concurrency Controls, Immutable Audit Logging, and Full-Stack Cloud Observability.</i>
 </p>
 
-[✨ Live Features](#key-features) • [🏛 Architecture](#system-architecture) • [⚡ 1-Command Run](#quick-start) • [🧪 Test Suite (75/75)](#test-suite) • [📊 1000-User Benchmark](#load-testing) • [🔒 Security Hardening](#security-hardening) • [📡 REST APIs](#api-specification) • [☁️ Cloud Deployment](#cloud-deployment)
+[✨ Live Demo](#live-demo) • [✨ Live Features](#key-features) • [🏛 Architecture](#system-architecture) • [⚡ 1-Command Run](#quick-start) • [🧪 Test Suite (75/75)](#test-suite) • [📊 1000-User Benchmark](#load-testing) • [🔒 Security Hardening](#security-hardening) • [📡 REST APIs](#api-specification) • [☁️ Cloud Deployment](#cloud-deployment)
 
 </div>
+
+---
+
+<a id="live-demo"></a>
+## 🌐 Live Production Cloud Deployment (AWS EC2)
+
+The full 6-microservice stack is deployed and live on **AWS EC2 (Mumbai - ap-south-1)**:
+
+| Service | Live Endpoint URL | Description & Credentials |
+| :--- | :--- | :--- |
+| 🌐 **Frontend Web App** | [**http://65.1.91.228/login**](http://65.1.91.228/login) | **Admin**: `admin@company.com` / `Admin@123`<br/>**Manager**: `manager@company.com` / `Manager@123`<br/>**Employee**: `john.doe@company.com` / `Employee@123` |
+| 📖 **Interactive Swagger UI** | [**http://65.1.91.228/swagger-ui/index.html**](http://65.1.91.228/swagger-ui/index.html) | OpenAPI 3.0 Live Interactive API Explorer |
+| 📊 **Grafana Live Observability** | [**http://65.1.91.228:3001**](http://65.1.91.228:3001) | User: `admin` / Password: `admin` (Real-time JVM & HikariCP metrics) |
+| 📈 **Prometheus Metrics Engine** | [**http://65.1.91.228:9090**](http://65.1.91.228:9090) | Time-series scraper for JVM & HTTP metrics |
+| 🔌 **Spring Boot REST API** | [**http://65.1.91.228:8080/api/v1**](http://65.1.91.228:8080/api/v1) | Backend REST Microservice Root Endpoint |
+| 🩺 **Actuator Health Probe** | [**http://65.1.91.228:8080/actuator/health**](http://65.1.91.228:8080/actuator/health) | System Liveness & Readiness Upstream Probe |
 
 ---
 

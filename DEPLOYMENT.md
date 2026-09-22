@@ -82,6 +82,16 @@ chmod +x ./deploy/aws/ec2/setup-ec2.sh
 ./deploy/aws/ec2/setup-ec2.sh
 ```
 
+### 🌐 Active Live Deployment Endpoints (AWS EC2 Mumbai):
+| Service | Live Endpoint Link | Access / Demo Credentials |
+| :--- | :--- | :--- |
+| **Frontend Web App** | [`http://65.1.91.228/login`](http://65.1.91.228/login) | **Admin**: `admin@company.com` / `Admin@123`<br/>**Manager**: `manager@company.com` / `Manager@123`<br/>**Employee**: `john.doe@company.com` / `Employee@123` |
+| **Interactive Swagger Docs** | [`http://65.1.91.228/swagger-ui/index.html`](http://65.1.91.228/swagger-ui/index.html) | OpenAPI 3.0 Interactive Documentation |
+| **Grafana Observability** | [`http://65.1.91.228:3001`](http://65.1.91.228:3001) | User: `admin` / Password: `admin` |
+| **Prometheus Metrics** | [`http://65.1.91.228:9090`](http://65.1.91.228:9090) | Scraping JVM & HTTP metrics |
+| **Spring Boot REST API** | [`http://65.1.91.228:8080/api/v1`](http://65.1.91.228:8080/api/v1) | Backend REST API Root |
+| **Actuator Health Probe** | [`http://65.1.91.228:8080/actuator/health`](http://65.1.91.228:8080/actuator/health) | System Liveness Probe |
+
 > 📖 **Full Walkthrough**: Detailed console instructions, security group configurations, and domain/SSL setup can be found in [EC2_DEPLOYMENT_GUIDE.md](file:///deploy/aws/ec2/EC2_DEPLOYMENT_GUIDE.md).
 
 ---
