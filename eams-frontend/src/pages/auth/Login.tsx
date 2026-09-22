@@ -5,6 +5,7 @@ import { ShieldCheck, Lock, User, ArrowRight, Eye, EyeOff, CheckCircle2, Sparkle
 import { useToast } from '../../components/common/Toast';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
 import { ForgotPasswordModal } from '../../components/auth/ForgotPasswordModal';
+import { InteractiveGridBackground } from '../../components/common/InteractiveGridBackground';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -44,15 +45,13 @@ export const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen ambient-mesh-bg flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans selection:bg-indigo-500 selection:text-white">
+      {/* Interactive Cursor-Tracking Grid Background */}
+      <InteractiveGridBackground cellSize={42} glowRadius={280} />
+
       {/* Top Right Theme Selector */}
       <div className="absolute top-5 right-5 z-20">
         <ThemeToggle />
       </div>
-
-      {/* Decorative subtle grid overlay */}
-      <div 
-        className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" 
-      />
 
       <div className="w-full max-w-md z-10 space-y-6">
         {/* Brand Logo & Header */}
