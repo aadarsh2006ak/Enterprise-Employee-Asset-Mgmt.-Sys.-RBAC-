@@ -129,7 +129,6 @@ public class ExportServiceImpl implements ExportService {
     // =========================================================================
 
     @Override
-    @Transactional(readOnly = true)
     public void streamEmployees(OutputStream os, ExportFormat format, Long departmentId, EmployeeStatus status, String search) {
         try {
             List<String> headers = List.of("ID", "Employee Code", "Full Name", "Username", "Email",
@@ -196,7 +195,6 @@ public class ExportServiceImpl implements ExportService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public void streamDepartments(OutputStream os, ExportFormat format) {
         try {
             List<String> headers = List.of("ID", "Department Name", "Manager Name", "Manager Code", "Total Employees");
@@ -243,7 +241,6 @@ public class ExportServiceImpl implements ExportService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public void streamAssets(OutputStream os, ExportFormat format, Long categoryId, AssetStatus status, String search) {
         try {
             List<String> headers = List.of("ID", "Asset Tag", "Category", "Model Name", "Serial Number",
@@ -304,7 +301,6 @@ public class ExportServiceImpl implements ExportService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public void streamAuditLogs(OutputStream os, ExportFormat format, String entityName, Long entityId,
                                 AuditAction action, String username, Long userId, Instant startDate, Instant endDate) {
         try {

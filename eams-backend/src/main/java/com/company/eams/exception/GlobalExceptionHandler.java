@@ -254,6 +254,8 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .timestamp(Instant.now())
                 .build();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(error);
     }
 }

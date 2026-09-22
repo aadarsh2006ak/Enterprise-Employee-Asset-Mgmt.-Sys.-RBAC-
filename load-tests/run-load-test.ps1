@@ -6,6 +6,8 @@
 param (
     [int]$Threads = 500,
     [int]$RampUp = 60,
+    [int]$Loops = 10,
+    [int]$SlaMs = 5000,
     [int]$Duration = 300,
     [string]$HostUrl = "localhost",
     [int]$Port = 8080
@@ -24,6 +26,8 @@ Write-Host "==================================================================" 
 Write-Host "Target Host     : http://${HostUrl}:${Port}"
 Write-Host "Virtual Users   : $Threads concurrent threads"
 Write-Host "Ramp-up Time    : $RampUp seconds"
+Write-Host "Loop Count      : $Loops loops"
+Write-Host "SLA Latency     : $SlaMs ms"
 Write-Host "Duration        : $Duration seconds"
 Write-Host "Test Plan       : $JmxPath"
 Write-Host "Output Dir      : $ResultsDir"
@@ -56,6 +60,8 @@ $JMeterArgs = @(
     "-Jport=$Port",
     "-Jthreads=$Threads",
     "-Jrampup=$RampUp",
+    "-Jloops=$Loops",
+    "-Jsla_ms=$SlaMs",
     "-Jduration=$Duration"
 )
 

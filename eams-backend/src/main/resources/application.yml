@@ -4,10 +4,10 @@ server:
     context-path: /
   tomcat:
     threads:
-      max: 200 # Concurrent request-handling threads
-      min-spare: 20
-    accept-count: 100 # Queued requests beyond max threads (graceful backpressure)
-    max-connections: 8192
+      max: 500 # Scaled concurrent request-handling threads for high concurrency
+      min-spare: 50
+    accept-count: 1000 # Increased TCP backlog queue capacity
+    max-connections: 10000
 
 spring:
   application:
@@ -24,12 +24,12 @@ spring:
     # HikariCP Enterprise Pool Tuning
     hikari:
       pool-name: EAMSHikariCP
-      maximum-pool-size: 30 # Matches DB max_connections budget
-      minimum-idle: 10
-      connection-timeout: 5000 # 5s fail-fast instead of hanging indefinitely
+      maximum-pool-size: 60 # Matches DB connections budget for 500-1000 users
+      minimum-idle: 20
+      connection-timeout: 10000 # 10s timeout
       idle-timeout: 300000 # 5 minutes
       max-lifetime: 1800000 # 30 minutes
-      leak-detection-threshold: 15000 # Warns if a connection is leaked (>15s)
+      leak-detection-threshold: 20000 # Warns if a connection is leaked (>20s)
       validation-timeout: 3000 # 3s validation timeout
       keepalive-time: 60000 # 1 minute keepalive to prevent firewall disconnects
 
@@ -151,6 +151,13 @@ management:
     export:
       prometheus:
         enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      sla:
+        http.server.requests: 10ms, 50ms, 100ms, 200ms, 500ms, 1s, 2s
+      percentiles:
+        http.server.requests: 0.5, 0.9, 0.99
 
 # OpenAPI / Swagger
 springdoc:

@@ -58,13 +58,13 @@ services:
     ports:
       - "${APP_PORT:-8080}:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=loadtest
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${DB_NAME:-eams}
       - SPRING_DATASOURCE_USERNAME=${DB_USER:-postgres}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-postgres}
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
-      - JWT_SECRET=${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      - JWT_SECRET=${JWT_SECRET:-39cf4a14a092cf9310b9e8f430eb1c3325d22ba390a80a44bf8bbd7521345a9c}
       - CORS_ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://localhost:3000,http://localhost:5173
     depends_on:
       postgres:

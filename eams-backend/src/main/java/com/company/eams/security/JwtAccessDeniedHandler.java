@@ -33,6 +33,11 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request,
                        HttpServletResponse response,
                        AccessDeniedException accessDeniedException) throws IOException, ServletException {
+        if (response.isCommitted()) {
+            log.trace("Response already committed, skipping access denied error writing: {}", request.getRequestURI());
+            return;
+        }
+
         log.warn("Access denied for user on {}: {}", request.getRequestURI(), accessDeniedException.getMessage());
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

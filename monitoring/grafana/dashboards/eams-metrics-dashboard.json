@@ -61,6 +61,10 @@
         {
           "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket[1m])) by (le))",
           "legendFormat": "P99 SLA"
+        },
+        {
+          "expr": "sum(rate(http_server_requests_seconds_sum[1m])) / sum(rate(http_server_requests_seconds_count[1m]))",
+          "legendFormat": "Avg Latency"
         }
       ]
     },

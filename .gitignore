@@ -81,3 +81,10 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+# JMeter & Load Test Artifacts
+*.jtl
+*.jtl.*
+jmeter.log*
+load-tests/results_*/
+load-tests/report_*/
+

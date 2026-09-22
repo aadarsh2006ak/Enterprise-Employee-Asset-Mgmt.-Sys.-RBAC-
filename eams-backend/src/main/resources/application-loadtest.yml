@@ -15,14 +15,15 @@ spring:
   datasource:
     hikari:
       pool-name: EAMSLoadTestHikariCP
-      maximum-pool-size: 60
-      minimum-idle: 20
-      connection-timeout: 10000
+      maximum-pool-size: 100
+      minimum-idle: 40
+      connection-timeout: 20000
       idle-timeout: 300000
       max-lifetime: 1800000
       leak-detection-threshold: 20000
 
   jpa:
+    open-in-view: false
     show-sql: false
     properties:
       hibernate:
@@ -34,10 +35,10 @@ spring:
     redis:
       lettuce:
         pool:
-          max-active: 64
-          max-idle: 32
-          min-idle: 8
-          max-wait: 3000ms
+          max-active: 100
+          max-idle: 50
+          min-idle: 10
+          max-wait: 5000ms
 
 # Resilience & Rate Limiting tuned for Load Testing (Prevents artificial 429 throttling during load benchmarks)
 eams:

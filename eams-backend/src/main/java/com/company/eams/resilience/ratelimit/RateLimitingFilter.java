@@ -56,7 +56,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        if (!rateLimitingEnabled) {
+        if (!rateLimitingEnabled || response.isCommitted()) {
             filterChain.doFilter(request, response);
             return;
         }

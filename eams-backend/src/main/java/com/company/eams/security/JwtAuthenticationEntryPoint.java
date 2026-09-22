@@ -33,6 +33,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
+        if (response.isCommitted()) {
+            log.trace("Response already committed, skipping authentication entry point error writing: {}", request.getRequestURI());
+            return;
+        }
+
         log.warn("Unauthorized request to {}: {}", request.getRequestURI(), authException.getMessage());
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
