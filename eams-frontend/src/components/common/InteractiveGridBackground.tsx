@@ -6,19 +6,40 @@ interface InteractiveGridBackgroundProps {
   className?: string;
 }
 
+interface CellTrail {
+  col: number;
+  row: number;
+  alpha: number;
+  colorType: number; // For color variation
+}
+
 export const InteractiveGridBackground: React.FC<InteractiveGridBackgroundProps> = ({
-  cellSize = 44,
-  glowRadius = 260,
+  cellSize = 38,
+  glowRadius = 240,
   className = '',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const mouseRef = useRef<{ x: number; y: number; targetX: number; targetY: number; isInside: boolean }>({
+  const mouseRef = useRef<{
+    x: number;
+    y: number;
+    targetX: number;
+    targetY: number;
+    prevX: number;
+    prevY: number;
+    isInside: boolean;
+    speed: number;
+  }>({
     x: -1000,
     y: -1000,
     targetX: -1000,
     targetY: -1000,
+    prevX: -1000,
+    prevY: -1000,
     isInside: false,
+    speed: 0,
   });
+
+  const trailsRef = useRef<Map<string, CellTrail>>(new Map());
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -52,17 +73,29 @@ export const InteractiveGridBackground: React.FC<InteractiveGridBackgroundProps>
     window.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseleave', handleMouseLeave);
 
-    // Initial center position for ambient subtle glow
+    // Initial default center position
     mouseRef.current.x = width / 2;
     mouseRef.current.y = height / 3;
     mouseRef.current.targetX = width / 2;
     mouseRef.current.targetY = height / 3;
 
-    const render = () => {
+    let lastTime = performance.now();
+
+    const render = (time: number) => {
+      const dt = Math.min((time - lastTime) / 1000, 0.1);
+      lastTime = time;
+
       // Smooth mouse follow (LERP)
-      const lerpFactor = 0.15;
+      const lerpFactor = 0.18;
+      const prevX = mouseRef.current.x;
+      const prevY = mouseRef.current.y;
+      
       mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * lerpFactor;
       mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * lerpFactor;
+
+      const dx = mouseRef.current.x - prevX;
+      const dy = mouseRef.current.y - prevY;
+      mouseRef.current.speed = Math.sqrt(dx * dx + dy * dy);
 
       const { x: mx, y: my, isInside } = mouseRef.current;
 
@@ -72,90 +105,122 @@ export const InteractiveGridBackground: React.FC<InteractiveGridBackgroundProps>
         document.documentElement.classList.contains('dark') ||
         !document.documentElement.classList.contains('light');
 
-      // Grid Colors
-      const baseLineColor = isDarkMode ? 'rgba(255, 255, 255, 0.038)' : 'rgba(0, 0, 0, 0.05)';
-
-      // 1. Draw static subtle base grid lines
+      // 1. Draw Static Base Grid Lines (Subtle dark blueprint box pattern)
       ctx.lineWidth = 1;
-      ctx.strokeStyle = baseLineColor;
+      ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.045)' : 'rgba(0, 0, 0, 0.055)';
 
       ctx.beginPath();
-      // Vertical lines
       for (let x = 0; x <= width; x += cellSize) {
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
       }
-      // Horizontal lines
       for (let y = 0; y <= height; y += cellSize) {
         ctx.moveTo(0, y);
         ctx.lineTo(width, y);
       }
       ctx.stroke();
 
-      // 2. Identify hovered grid cells and illuminate them
+      // 2. Add Trail for Current Hovered Cells
       if (isInside || mx >= 0) {
         const hoveredCol = Math.floor(mx / cellSize);
         const hoveredRow = Math.floor(my / cellSize);
-
-        // Highlight nearby cells
         const range = Math.ceil(glowRadius / cellSize);
+
         for (let r = -range; r <= range; r++) {
           for (let c = -range; c <= range; c++) {
-            const cellCol = hoveredCol + c;
-            const cellRow = hoveredRow + r;
-            const cellX = cellCol * cellSize;
-            const cellY = cellRow * cellSize;
-
-            // Distance from mouse to cell center
-            const centerX = cellX + cellSize / 2;
-            const centerY = cellY + cellSize / 2;
-            const dist = Math.hypot(mx - centerX, my - centerY);
+            const col = hoveredCol + c;
+            const row = hoveredRow + r;
+            const cellCenterX = col * cellSize + cellSize / 2;
+            const cellCenterY = row * cellSize + cellSize / 2;
+            const dist = Math.hypot(mx - cellCenterX, my - cellCenterY);
 
             if (dist < glowRadius) {
-              const intensity = Math.pow(1 - dist / glowRadius, 1.8);
+              const intensity = Math.pow(1 - dist / glowRadius, 1.6);
+              const key = `${col},${row}`;
+              const existing = trailsRef.current.get(key);
+              
+              const newAlpha = Math.max(existing ? existing.alpha : 0, intensity);
+              const colorType = (Math.abs(col * 7 + row * 13)) % 3; // deterministic pleasant color palette
 
-              // Draw illuminated box fill
-              const fillAlpha = intensity * (isDarkMode ? 0.14 : 0.08);
-              ctx.fillStyle = isDarkMode
-                ? `rgba(99, 102, 241, ${fillAlpha})`
-                : `rgba(79, 70, 229, ${fillAlpha})`;
-              ctx.fillRect(cellX + 1, cellY + 1, cellSize - 2, cellSize - 2);
-
-              // Draw highlighted cell borders
-              const borderAlpha = intensity * (isDarkMode ? 0.55 : 0.4);
-              ctx.strokeStyle = isDarkMode
-                ? `rgba(129, 140, 248, ${borderAlpha})`
-                : `rgba(99, 102, 241, ${borderAlpha})`;
-              ctx.lineWidth = 1.2;
-              ctx.strokeRect(cellX + 0.5, cellY + 0.5, cellSize - 1, cellSize - 1);
+              trailsRef.current.set(key, {
+                col,
+                row,
+                alpha: newAlpha,
+                colorType,
+              });
             }
           }
         }
       }
 
-      // 3. Draw Radial Spotlight Glow on Grid Lines around Cursor
+      // 3. Render and Decay Trails
+      const decayRate = 1.8 * dt; // Smooth fade-out in ~0.55s
+      const entries = Array.from(trailsRef.current.entries());
+
+      for (const [key, cell] of entries) {
+        const { col, row, alpha, colorType } = cell;
+        const cellX = col * cellSize;
+        const cellY = row * cellSize;
+
+        if (cellX + cellSize < 0 || cellX > width || cellY + cellSize < 0 || cellY > height) {
+          trailsRef.current.delete(key);
+          continue;
+        }
+
+        // Color variation palette based on cell:
+        // 0: Electric Indigo (rgba(99, 102, 241))
+        // 1: Cyber Cyan (rgba(56, 189, 248))
+        // 2: Neon Purple (rgba(168, 85, 247))
+        let rVal = 99, gVal = 102, bVal = 241;
+        if (colorType === 1) {
+          rVal = 56; gVal = 189; bVal = 248; // Cyan
+        } else if (colorType === 2) {
+          rVal = 168; gVal = 85; bVal = 247; // Purple
+        }
+
+        // Cell Box Glow Fill
+        const fillAlpha = alpha * (isDarkMode ? 0.22 : 0.12);
+        ctx.fillStyle = `rgba(${rVal}, ${gVal}, ${bVal}, ${fillAlpha})`;
+        ctx.fillRect(cellX + 1, cellY + 1, cellSize - 2, cellSize - 2);
+
+        // Cell Glowing Border
+        const borderAlpha = alpha * (isDarkMode ? 0.75 : 0.55);
+        ctx.strokeStyle = `rgba(${rVal}, ${gVal}, ${bVal}, ${borderAlpha})`;
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(cellX + 0.5, cellY + 0.5, cellSize - 1, cellSize - 1);
+
+        // Decay alpha over time
+        cell.alpha -= decayRate;
+        if (cell.alpha <= 0.01) {
+          trailsRef.current.delete(key);
+        }
+      }
+
+      // 4. Large Radiant Ambient Cursor Spotlight
       if (mx >= 0 && my >= 0) {
-        const gradient = ctx.createRadialGradient(mx, my, 0, mx, my, glowRadius * 1.2);
+        const spotlightRadius = glowRadius * 1.35;
+        const radialGrad = ctx.createRadialGradient(mx, my, 0, mx, my, spotlightRadius);
+
         if (isDarkMode) {
-          gradient.addColorStop(0, 'rgba(99, 102, 241, 0.32)');
-          gradient.addColorStop(0.35, 'rgba(139, 92, 246, 0.16)');
-          gradient.addColorStop(0.7, 'rgba(56, 189, 248, 0.05)');
-          gradient.addColorStop(1, 'transparent');
+          radialGrad.addColorStop(0, 'rgba(99, 102, 241, 0.32)');
+          radialGrad.addColorStop(0.3, 'rgba(56, 189, 248, 0.16)');
+          radialGrad.addColorStop(0.65, 'rgba(139, 92, 246, 0.06)');
+          radialGrad.addColorStop(1, 'transparent');
         } else {
-          gradient.addColorStop(0, 'rgba(99, 102, 241, 0.2)');
-          gradient.addColorStop(0.4, 'rgba(79, 70, 229, 0.1)');
-          gradient.addColorStop(0.8, 'rgba(14, 165, 233, 0.03)');
-          gradient.addColorStop(1, 'transparent');
+          radialGrad.addColorStop(0, 'rgba(99, 102, 241, 0.22)');
+          radialGrad.addColorStop(0.35, 'rgba(14, 165, 233, 0.12)');
+          radialGrad.addColorStop(0.7, 'rgba(99, 102, 241, 0.04)');
+          radialGrad.addColorStop(1, 'transparent');
         }
 
         ctx.save();
-        ctx.fillStyle = gradient;
+        ctx.fillStyle = radialGrad;
         ctx.beginPath();
-        ctx.arc(mx, my, glowRadius * 1.2, 0, Math.PI * 2);
+        ctx.arc(mx, my, spotlightRadius, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
-        // 4. Draw glowing intersection dots / pluses near cursor
+        // 5. High-Tech Grid Intersections (+) Highlight
         const startX = Math.max(0, Math.floor((mx - glowRadius) / cellSize) * cellSize);
         const endX = Math.min(width, Math.ceil((mx + glowRadius) / cellSize) * cellSize);
         const startY = Math.max(0, Math.floor((my - glowRadius) / cellSize) * cellSize);
@@ -165,17 +230,20 @@ export const InteractiveGridBackground: React.FC<InteractiveGridBackgroundProps>
           for (let iy = startY; iy <= endY; iy += cellSize) {
             const dist = Math.hypot(mx - ix, my - iy);
             if (dist < glowRadius) {
-              const intensity = Math.pow(1 - dist / glowRadius, 1.5);
-              const dotAlpha = intensity * (isDarkMode ? 0.9 : 0.7);
+              const crossIntensity = Math.pow(1 - dist / glowRadius, 1.8);
+              const crossAlpha = crossIntensity * (isDarkMode ? 0.9 : 0.7);
 
-              ctx.fillStyle = isDarkMode
-                ? `rgba(165, 180, 252, ${dotAlpha})`
-                : `rgba(99, 102, 241, ${dotAlpha})`;
+              ctx.strokeStyle = `rgba(224, 231, 255, ${crossAlpha})`;
+              ctx.lineWidth = 1.2;
 
-              // Glowing dot at intersection
+              // Draw small cross (+) at intersection
+              const arm = 3;
               ctx.beginPath();
-              ctx.arc(ix, iy, 1.5 + intensity * 1.5, 0, Math.PI * 2);
-              ctx.fill();
+              ctx.moveTo(ix - arm, iy);
+              ctx.lineTo(ix + arm, iy);
+              ctx.moveTo(ix, iy - arm);
+              ctx.lineTo(ix, iy + arm);
+              ctx.stroke();
             }
           }
         }
